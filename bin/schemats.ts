@@ -7,6 +7,7 @@
 import * as yargs from 'yargs'
 import * as fs from 'fs'
 import { typescriptOfSchema, getDatabase } from '../src/index'
+import * as ioTsGenerate from '../src/io-ts'
 import Options from '../src/options'
 
 interface SchematsConfig {
@@ -15,6 +16,7 @@ interface SchematsConfig {
     schema: string,
     output: string,
     camelCase: boolean,
+    ioTs: boolean,
     noHeader: boolean,
 }
 
@@ -35,6 +37,7 @@ let argv: SchematsConfig = yargs
     .alias('t', 'table')
     .nargs('t', 1)
     .describe('t', 'table name')
+    .describe('io-ts', 'enable io-ts generation')
     .alias('s', 'schema')
     .nargs('s', 1)
     .describe('s', 'schema name')
@@ -59,9 +62,16 @@ let argv: SchematsConfig = yargs
                 argv.table = [argv.table]
             }
         }
-
-        let formattedOutput = await typescriptOfSchema(
+        let formattedOutput
+        
+        if (!argv.ioTs) {
+            formattedOutput = await typescriptOfSchema(
             argv.conn, argv.table, argv.schema, { camelCase: argv.camelCase, writeHeader: !argv.noHeader })
+        } else {
+            formattedOutput = await ioTsGenerate.generate(
+            argv.conn, argv.table, argv.schema, { camelCase: argv.camelCase, writeHeader: !argv.noHeader })
+        }
+      
         fs.writeFileSync(argv.output, formattedOutput)
 
     } catch (e) {
