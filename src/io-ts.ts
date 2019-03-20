@@ -31,15 +31,20 @@ export function generateEnumType(enumObject: any, options: Options) {
         const enumName = options.transformTypeName(enumNameRaw);
         const keys = enumObject[enumNameRaw].map((v: string) => `'${v}': null`);
         enumString += `
-        export const ${enumName} = t.keyof({
+        export const runtime_${enumName} = t.keyof({
           ${keys.join(',\n')}
-        });\n
+        });
+        export type ${enumName} = t.TypeOf<typeof runtime_${enumName}>
       `;
     }
     return enumString;
 }
 
 function getIoTSType(definition: ColumnDefinition): string {
+    const dateParsers = `t.union([
+    extra.DateFromISOString,
+    extra.DateFromUnixTime,
+  ])`;
     let baseType: string;
     switch (definition.tsType) {
         case 'any':
@@ -51,8 +56,10 @@ function getIoTSType(definition: ColumnDefinition): string {
             baseType = `t.${definition.tsType}`;
             break;
         case 'Object':
+            baseType = 't.unknown';
+            break;
         case 'Date':
-            baseType = 't.union([t.array(t.string), t.array(extra.date)])';
+            baseType = dateParsers;
             break;
 
         case 'Array<number>':
@@ -65,11 +72,12 @@ function getIoTSType(definition: ColumnDefinition): string {
             baseType = 't.array(t.string)';
             break;
         case 'Array<Object>':
-            baseType = 't.array(t.UnknownRecord)';
+            baseType = 't.array(t.unknown)';
             break;
         case 'Array<Date>':
-            baseType = 't.union([t.array(t.string), t.array(extra.DateFromISOString)])';
+            baseType = `t.array(${dateParsers})`;
             break;
+
         case 'Buffer':
             baseType = 't.unknown';
             break;
@@ -78,11 +86,11 @@ function getIoTSType(definition: ColumnDefinition): string {
         default:
             // This is the enum types
             // note this
-            baseType = definition.tsType;
+            baseType = `runtime_${definition.tsType}`;
             break;
     }
 
-    return definition.nullable ? `t.array([${baseType}, t.null])` : baseType;
+    return definition.nullable ? `t.union([${baseType}, t.null])` : baseType;
 }
 
 function generateTable(tableNameRaw: string, tableDefinition: TableDefinition, options: Options): string {
