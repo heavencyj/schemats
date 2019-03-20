@@ -44,6 +44,7 @@ function getIoTSType(definition: ColumnDefinition): string {
     const dateParsers = `t.union([
     extra.DateFromISOString,
     extra.DateFromUnixTime,
+    extra.date,
   ])`;
     let baseType: string;
     switch (definition.tsType) {
