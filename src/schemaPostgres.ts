@@ -83,8 +83,11 @@ export class PostgresDatabase implements Database {
                     if (customTypes.indexOf(column.udtName) !== -1) {
                         column.tsType = options.transformTypeName(column.udtName)
                         return column
+                    } else if (column.udtName.startsWith('_') && customTypes.indexOf(column.udtName.slice(1)) !== -1) {
+                        column.tsType = `Array<${options.transformTypeName(column.udtName.slice(1))}>`
+                        return column
                     } else {
-                        console.log(`Type [${column.udtName} has been mapped to [any] because no specific type has been found.`)
+                        console.log(`Type [${column.udtName}] has been mapped to [any] because no specific type has been found.`)
                         column.tsType = 'any'
                         return column
                     }
