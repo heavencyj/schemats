@@ -1,6 +1,6 @@
 {
-  "name": "schemats",
-  "version": "3.0.3",
+  "name": "@ssi/schemats",
+  "version": "3.0.6",
   "description": "Generate typescript interface definitions from (postgres) SQL database schema",
   "keywords": [
     "postgres",
@@ -25,7 +25,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sweetiq/schemats.git"
+    "url": "https://github.com/heavencyj/schemats.git"
   },
   "bugs": {
     "url": "https://github.com/sweetiq/schemats/issues"
